@@ -8,7 +8,6 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-
     steps:
     - name: Checkout Repository
       uses: actions/checkout@v3
@@ -20,11 +19,11 @@ jobs:
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         aws-region: us-east-2
 
-    # 1. Sync frontend to S3
-    - name: Sync Frontend to S3
+    # === Frontend Deployment ===
+    - name: Deploy Frontend to S3
       run: aws s3 sync ./frontend s3://dgyawali2002-bucket --exclude ".git*"
 
-    # 2. Package and upload Lambda functions
+    # === SaveEntry Lambda ===
     - name: Zip and Upload SaveEntry Lambda
       run: |
         cd backend/saveEntry
@@ -38,6 +37,7 @@ jobs:
           --s3-bucket dgyawali2002-bucket \
           --s3-key saveEntry/function.zip
 
+    # === GetEntries Lambda ===
     - name: Zip and Upload GetEntries Lambda
       run: |
         cd backend/getEntries
@@ -51,6 +51,7 @@ jobs:
           --s3-bucket dgyawali2002-bucket \
           --s3-key getEntries/function.zip
 
+    # === DeleteEntry Lambda ===
     - name: Zip and Upload DeleteEntry Lambda
       run: |
         cd backend/deleteEntry
