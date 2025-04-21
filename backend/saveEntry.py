@@ -8,7 +8,7 @@ def lambda_handler(event, context):
     item = {
         'entryId': str(uuid.uuid4()),
         'title': body['title'],
-        'content': body['content'],
+        'content': body['entry'],
         'timestamp': datetime.datetime.now().isoformat()
     }
     table.put_item(Item=item)
