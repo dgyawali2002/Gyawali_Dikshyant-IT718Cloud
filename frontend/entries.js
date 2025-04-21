@@ -1,4 +1,4 @@
-const apiBaseUrl = "https://m1lqe0htre.execute-api.us-east-2.amazonaws.com"; //API Gateway base URL
+const apiBaseUrl = "https://m1lqe0htre.execute-api.us-east-2.amazonaws.com/prod"; 
 
 document.addEventListener("DOMContentLoaded", () => {
   loadEntries();
@@ -8,7 +8,7 @@ async function loadEntries() {
   try {
     const response = await fetch(`${apiBaseUrl}/getEntries`);
     const data = await response.json();
-    renderEntries(data.entries || []);
+    renderEntries(data.entries || data); // Support both formats
   } catch (error) {
     console.error("Failed to load entries:", error);
   }
@@ -16,7 +16,7 @@ async function loadEntries() {
 
 function renderEntries(entries) {
   const container = document.getElementById("entriesContainer");
-  container.innerHTML = ""; // Clear previous content
+  container.innerHTML = "";
 
   if (entries.length === 0) {
     container.innerHTML = `<p class="text-center text-gray-600">No journal entries found.</p>`;
@@ -60,8 +60,8 @@ async function deleteEntry(entryId) {
 
     const result = await response.json();
     console.log(result.message);
-    document.getElementById("statusMessage").classList.remove("hidden");
-    loadEntries(); // Reload entries after deletion
+    document.getElementById("statusMessage")?.classList.remove("hidden");
+    loadEntries(); // Refresh
   } catch (error) {
     console.error("Failed to delete entry:", error);
   }
