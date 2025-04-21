@@ -1,4 +1,4 @@
-const API_BASE = "https://m1lqe0htre.execute-api.us-east-2.amazonaws.com/prod"; 
+const API_BASE = "https://m1lqe0htre.execute-api.us-east-2.amazonaws.com/prod"; // <-- updated with /prod
 
 // Save a new journal entry
 const saveForm = document.getElementById("journalForm");
@@ -11,7 +11,9 @@ if (saveForm) {
     try {
       const response = await fetch(`${API_BASE}/saveEntry`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json"
+        },
         body: JSON.stringify({ title, content: entry })
       });
 
@@ -19,11 +21,13 @@ if (saveForm) {
         document.getElementById("statusMessage").classList.remove("hidden");
         saveForm.reset();
       } else {
-        alert("Error saving entry.");
+        const errorText = await response.text();
+        alert("Error saving entry: " + errorText);
+        console.error("Save error response:", errorText);
       }
-    } catch (error) {
-      console.error("Error:", error);
-      alert("Request failed.");
+    } catch (err) {
+      alert("Request failed. See console for details.");
+      console.error("Save request failed:", err);
     }
   });
 }
@@ -37,7 +41,7 @@ if (entriesContainer) {
       const data = await res.json();
 
       entriesContainer.innerHTML = "";
-      data.forEach(entry => {
+      data.entries?.forEach(entry => {
         const div = document.createElement("div");
         div.className = "bg-white p-4 rounded shadow mb-4";
         div.innerHTML = `
@@ -49,6 +53,7 @@ if (entriesContainer) {
         entriesContainer.appendChild(div);
       });
 
+      // Set up delete buttons
       document.querySelectorAll(".delete-btn").forEach(btn => {
         btn.addEventListener("click", async () => {
           const id = btn.getAttribute("data-id");
@@ -60,7 +65,7 @@ if (entriesContainer) {
           });
 
           if (res.ok) {
-            loadEntries(); // Reload entries
+            loadEntries(); // reload entries
           } else {
             alert("Error deleting entry.");
           }
@@ -68,9 +73,9 @@ if (entriesContainer) {
       });
     } catch (error) {
       console.error("Error loading entries:", error);
-      entriesContainer.innerHTML = "<p class='text-red-600'>Failed to load entries.</p>";
     }
   }
 
+  // Load entries on page load
   loadEntries();
 }
