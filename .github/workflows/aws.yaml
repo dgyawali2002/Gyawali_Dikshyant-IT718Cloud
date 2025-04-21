@@ -1,15 +1,14 @@
-name: Deploy Frontend & Lambda Functions
-
+name: Sync to S3
 on:
   push:
     branches:
       - main
 
 jobs:
-  deploy:
+  sync:
     runs-on: ubuntu-latest
     steps:
-    - name: Checkout Repository
+    - name: Checkout Code
       uses: actions/checkout@v3
 
     - name: Configure AWS Credentials
@@ -19,48 +18,5 @@ jobs:
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         aws-region: us-east-2
 
-    # === Frontend Deployment ===
-    - name: Deploy Frontend to S3
-      run: aws s3 sync ./frontend s3://dgyawali2002-bucket --exclude ".git*"
-
-    # === SaveEntry Lambda ===
-    - name: Zip and Upload SaveEntry Lambda
-      run: |
-        cd backend/saveEntry
-        zip -r function.zip .
-        aws s3 cp function.zip s3://dgyawali2002-bucket/saveEntry/function.zip
-
-    - name: Deploy SaveEntry Lambda Function
-      run: |
-        aws lambda update-function-code \
-          --function-name SaveEntryFunction \
-          --s3-bucket dgyawali2002-bucket \
-          --s3-key saveEntry/function.zip
-
-    # === GetEntries Lambda ===
-    - name: Zip and Upload GetEntries Lambda
-      run: |
-        cd backend/getEntries
-        zip -r function.zip .
-        aws s3 cp function.zip s3://dgyawali2002-bucket/getEntries/function.zip
-
-    - name: Deploy GetEntries Lambda Function
-      run: |
-        aws lambda update-function-code \
-          --function-name GetEntriesFunction \
-          --s3-bucket dgyawali2002-bucket \
-          --s3-key getEntries/function.zip
-
-    # === DeleteEntry Lambda ===
-    - name: Zip and Upload DeleteEntry Lambda
-      run: |
-        cd backend/deleteEntry
-        zip -r function.zip .
-        aws s3 cp function.zip s3://dgyawali2002-bucket/deleteEntry/function.zip
-
-    - name: Deploy DeleteEntry Lambda Function
-      run: |
-        aws lambda update-function-code \
-          --function-name DeleteEntryFunction \
-          --s3-bucket dgyawali2002-bucket \
-          --s3-key deleteEntry/function.zip
+    - name: Sync Frontend to S3
+      run: aws s3 sync ./frontend s3://your-bucket-name --delete
