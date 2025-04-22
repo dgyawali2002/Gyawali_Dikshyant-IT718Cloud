@@ -6,19 +6,16 @@ table = dynamodb.Table("JournalEntries")
 
 def lambda_handler(event, context):
     try:
-        print("EVENT:", json.dumps(event))  # Debug log
-
-        if "body" not in event or not event["body"]:
-            raise ValueError("Missing or empty request body")
-
         body = json.loads(event["body"])
-        entry_id = body.get("entryId")
+        entry_id = body["entryId"]
 
-        if not entry_id:
-            raise ValueError("Missing entryId in request body")
+        # Set the correct partition key value
+        user_email = "test@example.com"  # This should match how the item was saved
 
-        # Delete the item from DynamoDB
-        table.delete_item(Key={"entryID": entry_id})
+        table.delete_item(Key={
+            "userEmail": user_email,
+            "entryID": entry_id
+        })
 
         return {
             "statusCode": 200,
