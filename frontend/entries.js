@@ -1,4 +1,4 @@
-const API_BASE = "https://m1lqe0htre.execute-api.us-east-2.amazonaws.com/prod"; 
+const API_BASE = "https://m1lqe0htre.execute-api.us-east-2.amazonaws.com/prod";
 
 document.addEventListener("DOMContentLoaded", () => {
   loadEntries();
@@ -35,12 +35,16 @@ async function loadEntries() {
         <h3 class="text-lg font-bold">${entry.title}</h3>
         <p class="text-gray-700 mt-2">${entry.content}</p>
         <p class="text-sm text-gray-500 mt-1">${new Date(entry.timestamp).toLocaleString()}</p>
-        <button data-id="${entry.entryID}" class="delete-btn mt-2 bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600">Delete</button>
+        <button 
+          data-id="${entry.entryID}" 
+          class="delete-btn mt-2 bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600">
+          Delete
+        </button>
       `;
       entriesContainer.appendChild(div);
     });
 
-    // Attach delete functionality
+    // Attach delete button handlers
     document.querySelectorAll(".delete-btn").forEach(button => {
       button.addEventListener("click", async () => {
         const id = button.getAttribute("data-id");
@@ -49,19 +53,25 @@ async function loadEntries() {
         try {
           const res = await fetch(`${API_BASE}/deleteEntry`, {
             method: "DELETE",
-            headers: { "Content-Type": "application/json" },
+            headers: {
+              "Content-Type": "application/json"
+            },
             body: JSON.stringify({ entryId: id })
           });
 
+          const resultText = await res.text();
+
           if (res.ok) {
-            loadEntries(); // Reload entries
+            console.log("Delete successful:", resultText);
+            loadEntries(); // Reload
           } else {
+            console.error("Delete failed:", resultText);
             alert("Failed to delete entry.");
-            console.error(await res.text());
           }
+
         } catch (err) {
           alert("Delete request failed. See console.");
-          console.error(err);
+          console.error("Delete request error:", err);
         }
       });
     });
