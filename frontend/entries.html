@@ -13,8 +13,15 @@
   <nav class="bg-blue-600 text-white p-4 shadow-md flex justify-center">
     <ul class="flex space-x-6">
       <li><a href="index.html" class="hover:underline font-semibold">Home</a></li>
-      <li><a href="index.html" class="hover:underline font-semibold">Entries</a></li>
-      <li><a href="index.html" class="hover:underline font-semibold">Logout</a></li>
+      <li><a href="entries.html" class="hover:underline font-semibold">Entries</a></li>
+      <li>
+        <a 
+          href="https://us-east-23irmhphkz.auth.us-east-2.amazoncognito.com/logout?client_id=358mc72lkua0r6jcvsqi7oh7c6&logout_uri=https%3A%2F%2Fd10qfh3mho4y9r.cloudfront.net"
+          class="hover:underline font-semibold"
+        >
+          Logout
+        </a>
+      </li>
     </ul>
   </nav>
 
@@ -24,10 +31,10 @@
 
     <!-- Container for dynamic entries -->
     <div id="entriesContainer" class="space-y-4">
-      <!-- Entries will be loaded here by entries.js -->
+      <!-- Entries will be injected by entries.js -->
     </div>
 
-    <!-- Optional status message -->
+    <!-- Status message -->
     <p id="statusMessage" class="text-sm text-green-600 mt-4 hidden">Entry deleted successfully.</p>
   </div>
 

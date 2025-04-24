@@ -1,10 +1,42 @@
 const API_BASE = "https://m1lqe0htre.execute-api.us-east-2.amazonaws.com/prod";
+const COGNITO_DOMAIN = "https://us-east-23irmhphkz.auth.us-east-2.amazoncognito.com";
+const CLIENT_ID = "358mc72lkua0r6jcvsqi7oh7c6";
+const LOGOUT_REDIRECT_URI = "https://d10qfh3mho4y9r.cloudfront.net"; // update if needed
 
-document.addEventListener("DOMContentLoaded", () => {
-  loadEntries();
+document.addEventListener("DOMContentLoaded", async () => {
+  const token = getIdToken();
+
+  if (!token) {
+    // No token, redirect to login
+    window.location.href = `${COGNITO_DOMAIN}/login?client_id=${CLIENT_ID}&response_type=token&scope=email+openid&redirect_uri=${LOGOUT_REDIRECT_URI}`;
+    return;
+  }
+
+  await loadEntries(token);
+
+  // Logout handler
+  document.getElementById("logoutBtn").addEventListener("click", () => {
+    window.location.href = `${COGNITO_DOMAIN}/logout?client_id=${CLIENT_ID}&logout_uri=${LOGOUT_REDIRECT_URI}`;
+  });
 });
 
-async function loadEntries() {
+function getIdToken() {
+  const hash = window.location.hash;
+  if (!hash) return null;
+
+  const params = new URLSearchParams(hash.replace("#", ""));
+  const idToken = params.get("id_token");
+
+  if (idToken) {
+    localStorage.setItem("id_token", idToken);
+    // Remove token from URL
+    window.history.replaceState({}, document.title, window.location.pathname);
+  }
+
+  return idToken || localStorage.getItem("id_token");
+}
+
+async function loadEntries(token) {
   const entriesContainer = document.getElementById("entriesContainer");
 
   if (!entriesContainer) {
@@ -15,7 +47,12 @@ async function loadEntries() {
   entriesContainer.innerHTML = "<p class='text-gray-500'>Loading entries...</p>";
 
   try {
-    const res = await fetch(`${API_BASE}/getEntries`);
+    const res = await fetch(`${API_BASE}/getEntries`, {
+      headers: {
+        Authorization: token
+      }
+    });
+
     if (!res.ok) throw new Error("Failed to fetch entries");
 
     const data = await res.json();
@@ -35,16 +72,12 @@ async function loadEntries() {
         <h3 class="text-lg font-bold">${entry.title}</h3>
         <p class="text-gray-700 mt-2">${entry.content}</p>
         <p class="text-sm text-gray-500 mt-1">${new Date(entry.timestamp).toLocaleString()}</p>
-        <button 
-          data-id="${entry.entryID}" 
-          class="delete-btn mt-2 bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600">
-          Delete
-        </button>
+        <button data-id="${entry.entryID}" class="delete-btn mt-2 bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600">Delete</button>
       `;
       entriesContainer.appendChild(div);
     });
 
-    // Attach delete button handlers
+    // Delete entry logic
     document.querySelectorAll(".delete-btn").forEach(button => {
       button.addEventListener("click", async () => {
         const id = button.getAttribute("data-id");
@@ -54,24 +87,24 @@ async function loadEntries() {
           const res = await fetch(`${API_BASE}/deleteEntry`, {
             method: "DELETE",
             headers: {
-              "Content-Type": "application/json"
+              "Content-Type": "application/json",
+              Authorization: token
             },
             body: JSON.stringify({ entryId: id })
           });
 
-          const resultText = await res.text();
+          const result = await res.text();
 
           if (res.ok) {
-            console.log("Delete successful:", resultText);
-            loadEntries(); // Reload
+            console.log("Delete successful:", result);
+            loadEntries(token);
           } else {
-            console.error("Delete failed:", resultText);
+            console.error("Delete failed:", result);
             alert("Failed to delete entry.");
           }
-
         } catch (err) {
           alert("Delete request failed. See console.");
-          console.error("Delete request error:", err);
+          console.error(err);
         }
       });
     });
